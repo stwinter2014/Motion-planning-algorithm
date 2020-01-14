@@ -105,33 +105,33 @@ def RealMaxFeedrate (Vstart, Vend, feedrate, length, Nm, LAcc, LDec, maxErr, j_m
         k = 0
         vl = max(Vstart, Vend)
         vh = feedrate
-        #print('vl = ' + str(vl))
-        #print('vh = ' + str(vh))
+        print('vl = ' + str(vl))
+        print('vh = ' + str(vh))
         vm_k = (Decimal(1/2)*(vl + vh)).quantize(Decimal("1.0000"))
-        #print('vm_k = ' + str(vm_k))
-        #print(type(vm_k))
+        print('vm_k = ' + str(vm_k))
+        print(type(vm_k))
         sm_k = AccDecDisplacement(Vstart, vm_k, j_max, acc_max, Tint, Nm) + AccDecDisplacement(vm_k, Vend, j_max, acc_max, Tint, Nm)
-        #print('sm_k = ' + str(sm_k))
+        print('sm_k = ' + str(sm_k))
         Vlist = []
         Vlist.append(vm_k)
         Slist = []
         Slist.append(sm_k)
         sm_klength_fabs = Decimal(fabs(sm_k - length)).quantize(Decimal("1.0000"))
         while sm_klength_fabs > maxErr and k < 50:
-            #print('погрешность = ' + str(sm_k - length))
-            #print('____________________________________________________________')
+            print('погрешность = ' + str(sm_k - length))
+            print('____________________________________________________________')
             if sm_k < length:
                 vl = vm_k
-                #print('vl = ' + str(vl))
-                #print('vh = ' + str(vh))
+                print('vl = ' + str(vl))
+                print('vh = ' + str(vh))
             else:
                 vh = vm_k
-                #print('vl = ' + str(vl))
-                #print('vh = ' + str(vh))
+                print('vl = ' + str(vl))
+                print('vh = ' + str(vh))
             vm_k = (Decimal(1/2)*(vl + vh)).quantize(Decimal("1.0000"))
-            #print('vm_k = ' + str(vm_k))
+            print('vm_k = ' + str(vm_k))
             sm_k = AccDecDisplacement(Vstart, vm_k, j_max, acc_max, Tint, Nm) + AccDecDisplacement(vm_k, Vend, j_max, acc_max, Tint, Nm)
-            #print('sm_k = ' + str(sm_k))
+            print('sm_k = ' + str(sm_k))
             Vlist.append(vm_k)
             Slist.append(sm_k)
             sm_klength_fabs = Decimal(fabs(sm_k - length)).quantize(Decimal("1.0000"))
