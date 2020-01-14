@@ -1,4 +1,6 @@
-from math import pi, cos, sin, fabs, sqrt, ceil, floor
+from math import fabs, sqrt, ceil, floor
+import numpy as np
+from decimal import Decimal
 
 #LOOK AHEAD ALGORITHM
 def LinkedFeedrate (Vend_last, l_list, feed_list, Nm, Vemax_list, N, j_max, acc_max, Tint, maxErr):
@@ -50,9 +52,6 @@ def EndingVel (length, Vstart, Vobj, j_max, acc_max, Tint, Nm, maxErr):
 def AccDecDisplacement (V1, V2, j_max, acc_max, Tint, Nm):
     acclist = []
     vellist = []
-    check_1 = 0
-    check_2 = 0
-    check_3 = 0
     if V1 == V2: #разгон/торможение не требуются
         vellist = []
         LAccDec = 0
@@ -60,25 +59,33 @@ def AccDecDisplacement (V1, V2, j_max, acc_max, Tint, Nm):
         J = 0
         n1 = 0
         n2 = 0
-        M1 = (fabs(V1 - V2))/(Nm*j_max*(Tint**2)) - Nm
-        M2 = sqrt(fabs(V1 - V2)/(j_max*(Tint**2)))
+        Tint2 = Decimal(Tint*Tint)
+        Tint2 = Tint2.quantize(Decimal("1.0000"))
+        Tint3 = Decimal(Tint*Tint*Tint)
+        Tint3 = Tint3.quantize(Decimal("1.0000"))
+        deltaV = Decimal(fabs(V1 - V2))
+        M1 = deltaV/(Nm*j_max*(Tint2)) - Nm
+        M2 = Decimal(sqrt(deltaV/(j_max*(Tint2))))
         if M1 > 0:
             n1 = Nm
-            n2 = ceil(M1) #ceiling
+            n2 = np.ceil(M1) #ceiling
         elif M1 <= 0:
-            n1 = ceil(M2) #ceiling
+            n1 = np.ceil(M2) #ceiling
             n2 = 0
-        A2 = 1/((2*n1+n2-1)*Tint)*(fabs(V1 - V2)-(n1 - 1)*(n1 + n2 - 1)*j_max*(Tint**2))
+        A2 = 1/(Decimal((2*n1+n2-1)*Tint)*(Decimal(fabs(V1 - V2))-(n1 - 1)*(n1 + n2 - 1)*j_max*(Tint2)))
+        print(A2)
         if V1 < V2:
             a2 = A2
             J = j_max
         elif V1 > V2:
             a2 = -A2
             J = - j_max
-        a = (2*n1+n2)*V1*Tint
-        b = 1/2*a2*(4*(n1**2)+4*n1*n2+n2**2-2*n1-n2)*(Tint**2)
-        c = 1/2*(2*n1**3+3*(n1**2)*n2+n1*(n2**2)-4*n1**2-4*n1*n2-n2**2+2*n1+n2)*J*(Tint**3)
-        LAccDec = a + b + c
+        a = Decimal((2*n1+n2)*V1*Tint)
+        b = Decimal(Decimal(0.5)*a2*(4*n1*n1+4*n1*n2+n2*n2-2*n1-n2))*(Tint2)
+        c = Decimal(Decimal(0.5)*(2*n1*n1*n1 + 3*n1*n1*n2 + n1*n2*n2 - 4*n1*n1-4*n1*n2-n2*n2+2*n1+n2))*Decimal(J)*(Tint3)
+        d = a + b + c
+        LAccDec = Decimal(d)
+        LAccDec = LAccDec.quantize(Decimal("1.0000"))
     return LAccDec
 
 #истинная максимальная скорость
@@ -88,19 +95,20 @@ def RealMaxFeedrate (Vstart, Vend, feedrate, length, Nm, LAcc, LDec, maxErr, j_m
         maxfeed = feedrate
         s = LAcc + LDec
     else:
-        k = 0
-        vl = max(Vstart, Vend)
-        vh = feedrate
+        vl = Decimal(max(Vstart, Vend))  #нижний предел скорости
+        vl = vl.quantize(Decimal("1.0000"))
+        vh = Decimal(feedrate)           #верхний предел скорости 
+        vh = vh.quantize(Decimal("1.0000"))
         print('vl = ' + str(vl))
         print('vh = ' + str(vh))
-        vm_k = 1/2*(vl + vh)
+        vm_k = Decimal(Decimal(0.5)*(vl + vh))
+        vm_k = vm_k.quantize(Decimal("1.0000"))
         print('vm_k = ' + str(vm_k))
         sm_k = AccDecDisplacement(Vstart, vm_k, j_max, acc_max, Tint, Nm) + AccDecDisplacement(vm_k, Vend, j_max, acc_max, Tint, Nm)
         print('sm_k = ' + str(sm_k))
         while fabs(sm_k - length) > maxErr:
             print('погрешность = ' + str(sm_k - length))
             print('____________________________________________________________')
-            k += 1
             if sm_k < length:
                 vl = vm_k
                 print('vl = ' + str(vl))
@@ -109,7 +117,8 @@ def RealMaxFeedrate (Vstart, Vend, feedrate, length, Nm, LAcc, LDec, maxErr, j_m
                 vh = vm_k
                 print('vl = ' + str(vl))
                 print('vh = ' + str(vh))
-            vm_k = 1/2*(vl + vh)
+            vm_k = Decimal(0.5)*(vl + vh)
+            vm_k = vm_k.quantize(Decimal("1.0000"))
             print('vm_k = ' + str(vm_k))
             sm_k = AccDecDisplacement(Vstart, vm_k, j_max, acc_max, Tint, Nm) + AccDecDisplacement(vm_k, Vend, j_max, acc_max, Tint, Nm)
             print('sm_k = ' + str(sm_k))
@@ -154,13 +163,13 @@ def AccVelProfiles (V1, V2, j_max, acc_max, Tint, Nm):
         J = 0
         n1 = 0
         n2 = 0
-        M1 = (fabs(V1 - V2))/(Nm*j_max*(Tint**2)) - Nm
-        M2 = sqrt(fabs(V1 - V2)/(j_max*(Tint**2)))
+        M1 = (np.fabs(V1 - V2))/(Nm*j_max*(Tint**2)) - Nm
+        M2 = np.sqrt(np.fabs(V1 - V2)/(j_max*(Tint**2)))
         if M1 > 0:
             n1 = Nm
-            n2 = ceil(M1) #ceiling
+            n2 = np.ceil(M1) #ceiling
         elif M1 <= 0:
-            n1 = ceil(M2) #ceiling
+            n1 = np.ceil(M2) #ceiling
             n2 = 0
         A2 = 1/((2*n1+n2-1)*Tint)*(fabs(V1 - V2)-(n1 - 1)*(n1 + n2 - 1)*j_max*(Tint**2))
         if V1 < V2:

@@ -11,9 +11,9 @@ feedrate = [30, 25, 30]     #list of feedrates for each block
 acceleration = [25, 25, 25] #allowable acceleration for each block
 deceleration = [25, 25, 25] #allowable deceleration for each block
 jerk = [50, 50, 50]
-tsample = 0.01
+tsample = Decimal(0.01)
 #tolerance
-linearErr = 0.01
+linearErr = Decimal(0.001)
 #corner parameters
 
 velocity_list = []
@@ -29,12 +29,13 @@ for i in range (0,2):
     LengthDec = AccDecControl.AccDecDisplacement (feedrate[i], 0, jerk[i], acceleration[i], tsample, Nm)
     print("Предварительная длина разгона: " + str(LengthAcc) + " мм.")
     print("Предварительная длина торможения: " + str(LengthDec) + " мм.")
-
+"""
     #расчет реальной максимальной скорости
     MaxFeedrate = AccDecControl.RealMaxFeedrate (0, 0, feedrate[i], blocklen, Nm, LengthAcc, LengthDec, linearErr, jerk[i], acceleration[i], tsample)
     print("Максимальная скорость сегмента: " + str(MaxFeedrate[0]) + " мм/c.")
     print("Длина разгона и торможения: " + str(MaxFeedrate[1]) + " мм.")
-
+"""
+"""
     #построение профиля скорости
     Profile = AccDecControl.AccDecType (0, 0, MaxFeedrate[0], blocklen, jerk[i], acceleration[i], tsample, Nm)
     velocity_list += Profile[0]+Profile[1]+Profile[2]
@@ -47,7 +48,7 @@ for i in range (len(velocity_list)):
     timelist.append(time)
 Graphs.Graph_01 (timelist, velocity_list,
                  'Время, с', 'Скорость, мм/с', 'Профиль скорости', 'Скорость инструмента')
-
+"""
 """
 N = 3
 blocklen_list = []
