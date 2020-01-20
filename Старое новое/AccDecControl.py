@@ -9,15 +9,18 @@ def LinkedFeedrate (Vend_last, l_list, feed_list, Nm, Vemax_list, N, j_max, acc_
     if N == 0:
         Vend = 0
     else:
-        Ve0 = EndingVel(l_list[0], Vend_last, feed_list[0], j_max, acc_max, Tint, Nm, maxErr)
-        print("Ve0 " + str(Ve0))
+        if type(feed_list) != list:
+            Ve0 = EndingVel(l_list, Vend_last, feed_list, j_max, acc_max, Tint, Nm, maxErr) 
+        else:
+            Ve0 = EndingVel(l_list[0], Vend_last, feed_list[0], j_max, acc_max, Tint, Nm, maxErr)
+        #print("Ve0 " + str(Ve0))
         K = N - 1
         Ve1 = 0
         while K >= 1:
-            if feed_list[K] == 80:
-                print("Ve1 вот вот вот " + str(Ve1))
+            #if feed_list[K] == 80:
+                #print("Ve1 вот вот вот " + str(Ve1))
             Ve1 = EndingVel(l_list[K], Ve1, feed_list[K], j_max, acc_max, Tint, Nm, maxErr)
-            print("Ve1 " + str(Ve1))
+            #print("Ve1 " + str(Ve1))
             Ve1 = min(Ve1, Vemax_list[K])
             #print("Ve1 " + str(Ve1))
             K -= 1
@@ -46,11 +49,11 @@ def EndingVel (length, Vstart, Vobj, j_max, acc_max, Tint, Nm, maxErr):
             S_k = AccDecDisplacement (Vstart, ve_k, j_max, acc_max, Tint, Nm)
             #print(S_k)
             #print('vl_k ', str(vl_k))
-            print('ve_k ', str(ve_k))
+            #print('ve_k ', str(ve_k))
             #print("________________")
             k += 1
-            if k == 49:
-                print("Достигнуто максимальное число итераций")
+            #if k == 51:
+                #print("Достигнуто максимальное число итераций")
         Ve = ve_k
     return Ve
 
@@ -96,7 +99,7 @@ def AccDecDisplacement (V1, V2, j_max, acc_max, Tint, Nm):
 #истинная максимальная скорость
 def RealMaxFeedrate (Vstart, Vend, feedrate, length, Nm, LAcc, LDec, maxErr, j_max, acc_max, Tint):
     if LAcc + LDec < length:
-        print("Сегмент содержит участок с постоянной скоростью.")
+        #print("Сегмент содержит участок с постоянной скоростью.")
         maxfeed = feedrate
         s = LAcc + LDec
         Vlist = []
@@ -105,39 +108,39 @@ def RealMaxFeedrate (Vstart, Vend, feedrate, length, Nm, LAcc, LDec, maxErr, j_m
         k = 0
         vl = max(Vstart, Vend)
         vh = feedrate
-        print('vl = ' + str(vl))
-        print('vh = ' + str(vh))
+        #print('vl = ' + str(vl))
+        #print('vh = ' + str(vh))
         vm_k = (Decimal(1/2)*(vl + vh)).quantize(Decimal("1.0000"))
-        print('vm_k = ' + str(vm_k))
-        print(type(vm_k))
+        #print('vm_k = ' + str(vm_k))
+        #print(type(vm_k))
         sm_k = AccDecDisplacement(Vstart, vm_k, j_max, acc_max, Tint, Nm) + AccDecDisplacement(vm_k, Vend, j_max, acc_max, Tint, Nm)
-        print('sm_k = ' + str(sm_k))
+        #print('sm_k = ' + str(sm_k))
         Vlist = []
         Vlist.append(vm_k)
         Slist = []
         Slist.append(sm_k)
         sm_klength_fabs = Decimal(fabs(sm_k - length)).quantize(Decimal("1.0000"))
         while sm_klength_fabs > maxErr and k < 50:
-            print('погрешность = ' + str(sm_k - length))
-            print('____________________________________________________________')
+            #print('погрешность = ' + str(sm_k - length))
+            #print('____________________________________________________________')
             if sm_k < length:
                 vl = vm_k
-                print('vl = ' + str(vl))
-                print('vh = ' + str(vh))
+                #print('vl = ' + str(vl))
+                #print('vh = ' + str(vh))
             else:
                 vh = vm_k
-                print('vl = ' + str(vl))
-                print('vh = ' + str(vh))
+                #print('vl = ' + str(vl))
+                #print('vh = ' + str(vh))
             vm_k = (Decimal(1/2)*(vl + vh)).quantize(Decimal("1.0000"))
-            print('vm_k = ' + str(vm_k))
+            #print('vm_k = ' + str(vm_k))
             sm_k = AccDecDisplacement(Vstart, vm_k, j_max, acc_max, Tint, Nm) + AccDecDisplacement(vm_k, Vend, j_max, acc_max, Tint, Nm)
-            print('sm_k = ' + str(sm_k))
+            #print('sm_k = ' + str(sm_k))
             Vlist.append(vm_k)
             Slist.append(sm_k)
             sm_klength_fabs = Decimal(fabs(sm_k - length)).quantize(Decimal("1.0000"))
             k += 1
-            if k == 49:
-                print("Достигнуто максимальное число итераций")
+            #if k == 49:
+                #print("Достигнуто максимальное число итераций")
         maxfeed = vm_k
         s = sm_k
     return maxfeed, s, Vlist, Slist
@@ -159,7 +162,7 @@ def AccDecType (Vstart, Vend, Vmax, length, j_max, acc_max, Tint, Nm):
         Ldec = 0
         dec = []
     l = Lconst + Lacc + Ldec
-    print("Длина разгона/торможения " + str(l))
+    print("     Длина разгона/торможения: " + str(l) + " мм.")
     while l < length:
         const.append(Vmax)
         Lconst = Tint*Vmax
